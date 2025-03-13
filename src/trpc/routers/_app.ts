@@ -1,9 +1,13 @@
+import { createTRPCRouter } from '../init'
 import { categoriesRouter } from '@/modules/categories/procedures';
+import { studioRouter } from '@/modules/studio/server/procedures';
+import { videosRouter } from '@/modules/videos/server/procedures';
 
-import { createTRPCRouter, protectedProcedure } from '../init'
 
 export const appRouter = createTRPCRouter({
-    categories: categoriesRouter
+    categories: categoriesRouter,
+    studio: studioRouter,
+    videos: videosRouter,
 });
 
 // export type definition of API
