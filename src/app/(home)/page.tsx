@@ -1,7 +1,11 @@
-export default function Home() {
+import { trpc } from "@/trpc/server"
+
+export default async function Home() {
+  const data = await trpc.hello({ text: 'ShenShining' })
+  
   return (
     <div>
-      I will load videos in the future!
+      Client components says: { data.greeting }
     </div>
   )
 }
