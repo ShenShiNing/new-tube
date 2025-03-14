@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -37,6 +37,9 @@ export const videos = pgTable("videos", {
     muxPalybackId: text("mux_paly_back_id").unique(),
     muxTrackId: text("mux_track_id").unique(),
     muxTrackStatus: text("mux_track_status").unique(), 
+    thumbnailUrl: text("thumbnail_url"),
+    previewUrl: text("preview_url"),
+    duration: integer("duration"),
     userId: uuid("user_id")
         .references(() => users.id, { 
             onDelete: "cascade"

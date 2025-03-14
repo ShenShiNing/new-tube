@@ -1,10 +1,12 @@
 'use client'
 
+import Link from "next/link"
 import { Suspense } from "react"
 import { trpc } from "@/trpc/client"
 import { ErrorBoundary } from "react-error-boundary"
 import { DEFAULT_LIMIT } from '@/constants'
 import { InfiniteScroll } from "@/components/infinite.scroll"
+import { VideoThumbnail } from "@/modules/videos/ui/components/video-thumbnail"
 import {
     Table,
     TableBody,
@@ -13,7 +15,6 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table"
-import Link from "next/link"
 
 export const VideosSection = () => {
     return (
@@ -52,7 +53,16 @@ const VideosSectionSuspense = () => {
                             <Link href={`/studio/videos/${video.id}`} key={video.id} legacyBehavior>
                                 <TableRow className="cursor-pointer">
                                     <TableCell>
-                                        {video.title}
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative aspect-video w-36 shrink-0">
+                                                <VideoThumbnail
+                                                    title={video.title}
+                                                    duration={video.duration || 0}
+                                                    thumbnailUrl={video.thumbnailUrl} 
+                                                    previewUrl={video.previewUrl} 
+                                                />
+                                            </div>
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         Visibility
