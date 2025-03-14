@@ -24,7 +24,8 @@ export const VideoThumbnail = ({
                     alt={title} 
                     className="h-full w-full object-cover group-hover:opacity-0" 
                 />
-                <Image 
+                <Image
+                    unoptimized={!!previewUrl}
                     fill 
                     src={previewUrl ?? '/placeholder.svg'} 
                     alt={title} 
