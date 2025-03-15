@@ -33,18 +33,6 @@ export const { POST } = serve(
             return existingVideo
         })
 
-        const transcript = await context.run("get-transcript", async () => {
-            const trackUrl = `https://stream.mux.com/${video.muxPalybackId}/text/${video.muxTrackId}.txt`
-            const response = await fetch(trackUrl)
-            const text = response.text()
-
-            if (!text) {
-                throw new Error("Bad request")
-            }
-
-            return text
-        })
-
         // const { body } = await context.api.openai.call(
         //     "generate-description",
         //     {
@@ -82,7 +70,6 @@ export const { POST } = serve(
         })
 
         const tempThumbnailUrl = body.data[0].url
-
         if (!tempThumbnailUrl) {
             throw new Error("Bad request")
         }
