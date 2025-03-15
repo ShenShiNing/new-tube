@@ -1,10 +1,14 @@
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
-import { videos, videoUpdateSchema } from "@/db/schema";
-import { db } from "@/db";
-import { mux } from "@/lib/mux";
 import { z } from "zod";
+import { db } from "@/db";
+import { and, eq } from "drizzle-orm";
+
+import { mux } from "@/lib/mux";
+
+import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+
+import { UTApi } from "uploadthing/server";
+import { videos, videoUpdateSchema } from "@/db/schema";
 
 export const videosRouter = createTRPCRouter({
     restoreThumbnail: protectedProcedure
@@ -23,16 +27,42 @@ export const videosRouter = createTRPCRouter({
                 throw new TRPCError({ code: 'NOT_FOUND' })
             }
 
+            if (existingVideo.thumbnailKey) {
+                const utapi = new UTApi()
+
+                await utapi.deleteFiles(existingVideo.thumbnailKey)
+                await db
+                    .update(videos)
+                    .set({
+                        thumbnailKey: null,
+                        thumbnailUrl: null
+                    })
+                    .where(and(
+                        eq(videos.id, input.id),
+                        eq(videos.userId, userId),
+                    ))
+            }
+
             if (!existingVideo.muxPalybackId) {
                 throw new TRPCError({ code: 'BAD_REQUEST' })
             }
 
-            const newThumbnailUrl = `https://image.mux.com/${existingVideo.muxPalybackId}/thumbnail.jpg`
+            const utapi = new UTApi()
+
+            const tempThumbnailUrl = `https://image.mux.com/${existingVideo.muxPalybackId}/thumbnail.jpg`
+            const uploadedThumbnail = await utapi.uploadFilesFromUrl(tempThumbnailUrl)
+
+            if (!uploadedThumbnail.data) {
+                throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
+            }
+
+            const { key: thumbnailKey, ufsUrl: thumbnailUrl } = uploadedThumbnail.data
 
             const [updatedVdeio] = await db
                 .update(videos)
                 .set({
-                    thumbnailUrl: newThumbnailUrl
+                    thumbnailUrl,
+                    thumbnailKey
                 })
                 .where(and(
                     eq(videos.id, input.id),
