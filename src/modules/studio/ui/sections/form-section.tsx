@@ -73,6 +73,15 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     const [video] = trpc.studio.getOne.useSuspenseQuery({ id: videoId })
     const [categories] = trpc.categories.getMany.useSuspenseQuery()
 
+    const generateThumbnail = trpc.videos.generateThumbnail.useMutation({
+        onSuccess: () => {
+            toast.success("Background job started", { description: "This may take some time" })
+        },
+        onError: () => {
+            toast.error("Something went wrong")
+        }
+    })
+
     const restoreThumbnail = trpc.videos.restoreThumbnail.useMutation({
         onSuccess: () => {
             utils.studio.getMany.invalidate()
@@ -241,7 +250,7 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                                                             <ImagePlusIcon className="size-4 mr-1" />
                                                             Change
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => generateThumbnail.mutate({ id: videoId })}>
                                                             <SparklesIcon className="size-4 mr-1" />
                                                             AI-generated
                                                         </DropdownMenuItem>

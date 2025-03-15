@@ -75,6 +75,7 @@ export const POST = async (request: Request) => {
 
             const tempthumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg`
             const temppreviewUrl = `https://image.mux.com/${playbackId}/animated.gif`
+            const duration = data.duration ? Math.round(data.duration * 1000) : 0
 
             const utapi = new UTApi()
             const [
@@ -91,8 +92,6 @@ export const POST = async (request: Request) => {
 
             const { key: thumbnailKey, ufsUrl: thumbnailUrl } = uploadedThumbnail.data
             const { key: previewKey, ufsUrl: previewUrl } = uploadedPreview.data
-
-            const duration = data.duration ? Math.round(data.duration * 1000) : 0
 
             await db
                 .update(videos)

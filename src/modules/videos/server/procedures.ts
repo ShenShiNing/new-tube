@@ -2,15 +2,27 @@ import { z } from "zod";
 import { db } from "@/db";
 import { and, eq } from "drizzle-orm";
 
-import { mux } from "@/lib/mux";
-
 import { TRPCError } from "@trpc/server";
+import { UTApi } from "uploadthing/server";
+
+import { mux } from "@/lib/mux";
+import { workflow } from "@/lib/workflow"
+import { videos, videoUpdateSchema } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
-import { UTApi } from "uploadthing/server";
-import { videos, videoUpdateSchema } from "@/db/schema";
-
 export const videosRouter = createTRPCRouter({
+    generateThumbnail: protectedProcedure
+        .input(z.object({ id: z.string().uuid() }))
+        .mutation(async ({ ctx, input }) => {
+            const { id: userId } = ctx.user
+
+            const { workflowRunId } = await workflow.trigger({
+                url: `${process.env.UPSTASH_WORKFLOW_URL}/api/videos/workflow/title`,
+                body: { userId, videoId: input.id },
+            })
+
+            return workflowRunId
+        }),
     restoreThumbnail: protectedProcedure
         .input(z.object({ id: z.string().uuid() }))
         .mutation(async ({ ctx, input }) => {
