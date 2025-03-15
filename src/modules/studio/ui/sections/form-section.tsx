@@ -16,6 +16,7 @@ import { snakeCaseToTitle } from "@/lib/utils"
 
 import { THUMBNAIL_FALLBACK } from "@/modules/videos/constants"
 import { ThumbnailUploadModal } from "@/modules/studio/ui/components/thumbnail-upload-modal"
+import { ThumbnailGenerateModal } from "@/modules/studio/ui/components/thumbnail-generate-modal"
 import { VideoPlayer } from "@/modules/videos/ui/components/video-player"
 import { CopyCheckIcon, CopyIcon, Globe2Icon, ImagePlusIcon, Loader2Icon, LockIcon, MoreVerticalIcon, RotateCcwIcon, SparklesIcon, TrashIcon } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -69,6 +70,8 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     const utils = trpc.useUtils()
 
     const [thumbnailModalOpen, setThumbnailModalOpen] = useState(false)
+    const [thumbnailGenerateModalOpen, setThumbnailGenerateModalOpen] = useState(false)
+
 
     const [video] = trpc.studio.getOne.useSuspenseQuery({ id: videoId })
     const [categories] = trpc.categories.getMany.useSuspenseQuery()
@@ -83,15 +86,6 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     })
 
     const generateTitle = trpc.videos.generateTitle.useMutation({
-        onSuccess: () => {
-            toast.success("Background job started", { description: "This may take some time" })
-        },
-        onError: () => {
-            toast.error("Something went wrong")
-        }
-    })
-
-    const generateThumbnail = trpc.videos.generateThumbnail.useMutation({
         onSuccess: () => {
             toast.success("Background job started", { description: "This may take some time" })
         },
@@ -157,6 +151,11 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
 
     return (
         <>
+            <ThumbnailGenerateModal
+                open={thumbnailGenerateModalOpen}
+                onOpenChange={setThumbnailGenerateModalOpen}
+                videoId={videoId}
+            />
             <ThumbnailUploadModal
                 open={thumbnailModalOpen}
                 onOpenChange={setThumbnailModalOpen}
@@ -297,7 +296,7 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                                                             <ImagePlusIcon className="size-4 mr-1" />
                                                             Change
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => generateThumbnail.mutate({ id: videoId })}>
+                                                        <DropdownMenuItem onClick={() => setThumbnailGenerateModalOpen(true)}>
                                                             <SparklesIcon className="size-4 mr-1" />
                                                             AI-generated
                                                         </DropdownMenuItem>
