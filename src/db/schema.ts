@@ -54,7 +54,7 @@ export const videos = pgTable("videos", {
     muxUploadId: text("mux_upload_id").unique(),
     muxPalybackId: text("mux_paly_back_id").unique(),
     muxTrackId: text("mux_track_id").unique(),
-    muxTrackStatus: text("mux_track_status").unique(), 
+    muxTrackStatus: text("mux_track_status"), 
     thumbnailUrl: text("thumbnail_url"),
     thumbnailKey: text("thumbnail_key"),
     previewUrl: text("preview_url"),
