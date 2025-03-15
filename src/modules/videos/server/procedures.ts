@@ -7,6 +7,40 @@ import { mux } from "@/lib/mux";
 import { z } from "zod";
 
 export const videosRouter = createTRPCRouter({
+    restoreThumbnail: protectedProcedure
+        .input(z.object({ id: z.string().uuid() }))
+        .mutation(async ({ ctx, input }) => {
+            const { id: userId } = ctx.user
+            const [existingVideo] = await db
+                .select()
+                .from(videos)
+                .where(and(
+                    eq(videos.id, input.id),
+                    eq(videos.userId, userId)
+                ))
+
+            if (!existingVideo) {
+                throw new TRPCError({ code: 'NOT_FOUND' })
+            }
+
+            if (!existingVideo.muxPalybackId) {
+                throw new TRPCError({ code: 'BAD_REQUEST' })
+            }
+
+            const newThumbnailUrl = `https://image.mux.com/${existingVideo.muxPalybackId}/thumbnail.jpg`
+
+            const [updatedVdeio] = await db
+                .update(videos)
+                .set({
+                    thumbnailUrl: newThumbnailUrl
+                })
+                .where(and(
+                    eq(videos.id, input.id),
+                    eq(videos.userId, userId)
+                ))
+                .returning()
+            return updatedVdeio
+        }),
     remove: protectedProcedure
         .input(z.object({ id: z.string().uuid() }))
         .mutation(async ({ ctx, input }) => {
