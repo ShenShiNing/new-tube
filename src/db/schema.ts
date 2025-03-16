@@ -1,18 +1,19 @@
 import { relations } from "drizzle-orm";
-import { 
+import {
     integer,
-    pgEnum, 
-    pgTable, 
-    text, 
-    timestamp, 
-    uniqueIndex, 
-    uuid 
+    pgEnum,
+    pgTable,
+    primaryKey,
+    text,
+    timestamp,
+    uniqueIndex,
+    uuid
 } from "drizzle-orm/pg-core";
-import { 
+import {
     createInsertSchema,
     createSelectSchema,
     createUpdateSchema
- } from "drizzle-zod"
+} from "drizzle-zod"
 
 export const users = pgTable("users", {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -25,7 +26,8 @@ export const users = pgTable("users", {
 }, (t) => [uniqueIndex('clerk_id_idx').on(t.clerId)])
 
 export const userRelations = relations(users, ({ many }) => ({
-    videos: many(videos)
+    videos: many(videos),
+    videoViews: many(videoViews)
 }))
 
 export const categories = pgTable("categories", {
@@ -37,7 +39,7 @@ export const categories = pgTable("categories", {
 }, (t) => [uniqueIndex("name_idx").on(t.name)])
 
 export const categoryRelations = relations(categories, ({ many }) => ({
-    videos: many(videos)
+    videos: many(videos),
 }))
 
 export const videoVisibility = pgEnum("video_visibility", [
@@ -54,7 +56,7 @@ export const videos = pgTable("videos", {
     muxUploadId: text("mux_upload_id").unique(),
     muxPalybackId: text("mux_paly_back_id").unique(),
     muxTrackId: text("mux_track_id").unique(),
-    muxTrackStatus: text("mux_track_status"), 
+    muxTrackStatus: text("mux_track_status"),
     thumbnailUrl: text("thumbnail_url"),
     thumbnailKey: text("thumbnail_key"),
     previewUrl: text("preview_url"),
@@ -62,7 +64,7 @@ export const videos = pgTable("videos", {
     duration: integer("duration").default(0).notNull(),
     visibility: videoVisibility("visibility").default("private").notNull(),
     userId: uuid("user_id")
-        .references(() => users.id, { 
+        .references(() => users.id, {
             onDelete: "cascade"
         })
         .notNull(),
@@ -78,7 +80,7 @@ export const videoInsertSchema = createInsertSchema(videos)
 export const videoUpdateSchema = createUpdateSchema(videos)
 export const vodepSelectSchema = createSelectSchema(videos)
 
-export const videoRelations = relations(videos, ({one}) => ({
+export const videoRelations = relations(videos, ({ one, many }) => ({
     user: one(users, {
         fields: [videos.userId],
         references: [users.id]
@@ -87,4 +89,34 @@ export const videoRelations = relations(videos, ({one}) => ({
         fields: [videos.categoryId],
         references: [categories.id]
     }),
+    views: many(videoViews),
 }))
+
+export const videoViews = pgTable("video_views", {
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+    videoId: uuid("video_id").references(() => videos.id, { onDelete: "cascade" }).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (t) => [
+    primaryKey({
+        name: "video_views_pk",
+        columns: [t.userId, t.videoId]
+    })
+])
+
+export const videoViewsRelations = relations(videoViews, ({ one }) => ({
+    users: one(users, {
+        fields: [videoViews.userId],
+        references: [users.id]
+    }),
+    videos: one(videos, {
+        fields: [videoViews.videoId],
+        references: [videos.id]
+    })
+}))
+
+export const videoViewSelectSchema = createSelectSchema(videoViews)
+export const videoViewInsertSchema = createInsertSchema(videoViews)
+export const videoViewUpdateSchema = createUpdateSchema(videoViews)
+
+
