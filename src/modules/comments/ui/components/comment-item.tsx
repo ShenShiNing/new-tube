@@ -4,7 +4,7 @@ import { toast } from "sonner"
 import { useAuth, useClerk } from "@clerk/nextjs"
 import { formatDistanceToNow } from "date-fns"
 import { CommentsGetManyOutput } from "@/modules/comments/types"
-import { MessageSquareIcon, MoreVerticalIcon, Trash2Icon } from "lucide-react"
+import { MessageSquareIcon, MoreVerticalIcon, Trash2Icon, ThumbsUpIcon, ThumbsDownIcon } from "lucide-react"
 import { UserAvatar } from "@/components/user-avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,6 +13,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
 interface CommentItemProps {
     comment: CommentsGetManyOutput["items"][number]
@@ -35,6 +36,34 @@ export const CommentItem = ({
             if (error.data?.code === "UNAUTHORIZED") {
                 clerk.openSignIn({ redirectUrl: "/sign-in" })
             } 
+        }
+    })
+
+    const like = trpc.commentReactions.like.useMutation({
+        onSuccess: () => {
+            utils.comments.getMany.invalidate({ videoId: comment.videoId })
+        },
+        onError: (error) => {
+            if (error.data?.code === "UNAUTHORIZED") {
+                toast.error("Please sign in to like a comment")
+                clerk.openSignIn()
+            } else {
+                toast.error("Something went wrong")
+            }
+        }
+    })
+
+    const dislike = trpc.commentReactions.dislike.useMutation({
+        onSuccess: () => {
+            utils.comments.getMany.invalidate({ videoId: comment.videoId })
+        },
+        onError: (error) => {  
+            if (error.data?.code === "UNAUTHORIZED") {
+                toast.error("Please sign in to dislike a comment")
+                clerk.openSignIn()
+            } else {
+                toast.error("Something went wrong")
+            }
         }
     })
 
@@ -64,9 +93,44 @@ export const CommentItem = ({
                     <p className="text-sm">
                         {comment.value}
                     </p>
-                    {/* TODO: Reactions */}
+                    <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center">
+                            <Button
+                                disabled={like.isPending}
+                                variant="ghost" 
+                                size="icon" 
+                                className="size-8"
+                                onClick={() => like.mutate({ commentId: comment.id })}
+                            >
+                                <ThumbsUpIcon 
+                                    className={cn(
+                                        comment.viewerReaction === "like" && "fill-black",
+                                    )} 
+                                />
+                            </Button>
+                            <span className="text-sm text-muted-foreground">
+                                {comment.likeCount}
+                            </span>
+                            <Button
+                                disabled={dislike.isPending}
+                                variant="ghost" 
+                                size="icon" 
+                                className="size-8"
+                                onClick={() => dislike.mutate({ commentId: comment.id })}
+                            >
+                                <ThumbsDownIcon 
+                                    className={cn(
+                                        comment.viewerReaction === "dislike" && "fill-black",
+                                    )} 
+                                />
+                            </Button>
+                            <span className="text-sm text-muted-foreground">
+                                {comment.dislikeCount}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="size-8">
                             <MoreVerticalIcon />
