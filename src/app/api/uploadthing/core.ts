@@ -45,8 +45,10 @@ export const ourFileRouter = {
         ))
 
       if (!existingVideo) throw new UploadThingError("Not found");
+
       if (existingVideo.thumbnailKey) {
         const utapi = new UTApi()
+        
         await utapi.deleteFiles(existingVideo.thumbnailKey)
         await db
           .update(videos)
