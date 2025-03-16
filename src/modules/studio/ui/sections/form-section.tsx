@@ -399,7 +399,7 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                                 {/* Video player */}
                                 <div className="aspect-video overflow-hidden relative">
                                     <VideoPlayer
-                                        playbackId={video.muxPalybackId}
+                                        playbackId={video.muxPlaybackId}
                                         thumbnailUrl={video.thumbnailUrl}
                                     />
                                 </div>

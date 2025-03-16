@@ -97,7 +97,7 @@ export const POST = async (request: Request) => {
                 .update(videos)
                 .set({
                     muxStatus: data.status,
-                    muxPalybackId: playbackId,
+                    muxPlaybackId: playbackId,
                     muxAssetId: data.id,
                     thumbnailUrl,
                     thumbnailKey,

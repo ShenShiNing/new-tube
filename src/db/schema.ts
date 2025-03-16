@@ -27,7 +27,8 @@ export const users = pgTable("users", {
 
 export const userRelations = relations(users, ({ many }) => ({
     videos: many(videos),
-    videoViews: many(videoViews)
+    videoViews: many(videoViews),
+    videoReactions: many(videoReactions)
 }))
 
 export const categories = pgTable("categories", {
@@ -54,7 +55,7 @@ export const videos = pgTable("videos", {
     muxStatus: text("mux_status"),
     muxAssetId: text("mux_asset_id").unique(),
     muxUploadId: text("mux_upload_id").unique(),
-    muxPalybackId: text("mux_paly_back_id").unique(),
+    muxPlaybackId: text("mux_playback_id").unique(),
     muxTrackId: text("mux_track_id").unique(),
     muxTrackStatus: text("mux_track_status"),
     thumbnailUrl: text("thumbnail_url"),
@@ -90,6 +91,7 @@ export const videoRelations = relations(videos, ({ one, many }) => ({
         references: [categories.id]
     }),
     views: many(videoViews),
+    reactions: many(videoReactions)
 }))
 
 export const videoViews = pgTable("video_views", {
@@ -119,4 +121,32 @@ export const videoViewSelectSchema = createSelectSchema(videoViews)
 export const videoViewInsertSchema = createInsertSchema(videoViews)
 export const videoViewUpdateSchema = createUpdateSchema(videoViews)
 
+export const relationTypes = pgEnum("relation_types", ["like", "dislike"])
 
+export const videoReactions = pgTable("video_reactions", {
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+    videoId: uuid("video_id").references(() => videos.id, { onDelete: "cascade" }).notNull(),
+    type: relationTypes("type").notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (t) => [
+    primaryKey({
+        name: "video_reactions_pk",
+        columns: [t.userId, t.videoId]
+    })
+])
+
+export const videoReactionsRelations = relations(videoReactions, ({ one }) => ({
+    users: one(users, {
+        fields: [videoReactions.userId],
+        references: [users.id]
+    }),
+    videos: one(videos, {
+        fields: [videoReactions.videoId],
+        references: [videos.id]
+    })
+}))
+
+export const videoReactionsSelectSchema = createSelectSchema(videoReactions)
+export const videoReactionsInsertSchema = createInsertSchema(videoReactions)
+export const videoReactionsUpdateSchema = createUpdateSchema(videoReactions)
