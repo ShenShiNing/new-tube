@@ -342,7 +342,6 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                                     </FormItem>
                                 )}
                             />
-                            {/* TODO： Add thumbnail field here */}
                             <FormField
                                 name="thumbnailUrl"
                                 control={form.control}
