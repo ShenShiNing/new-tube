@@ -18,11 +18,23 @@ import { THUMBNAIL_FALLBACK } from "@/modules/videos/constants"
 import { ThumbnailUploadModal } from "@/modules/studio/ui/components/thumbnail-upload-modal"
 import { ThumbnailGenerateModal } from "@/modules/studio/ui/components/thumbnail-generate-modal"
 import { VideoPlayer } from "@/modules/videos/ui/components/video-player"
-import { CopyCheckIcon, CopyIcon, Globe2Icon, ImagePlusIcon, Loader2Icon, LockIcon, MoreVerticalIcon, RotateCcwIcon, SparklesIcon, TrashIcon } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import {
+    CopyCheckIcon,
+    CopyIcon,
+    Globe2Icon,
+    ImagePlusIcon,
+    Loader2Icon,
+    LockIcon,
+    MoreVerticalIcon,
+    RotateCcwIcon,
+    RefreshCcwIcon,
+    SparklesIcon,
+    TrashIcon
+} from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -168,6 +180,17 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
         }
     })
 
+    const revalidate = trpc.videos.revalidate.useMutation({
+        onSuccess: () => {
+            utils.studio.getMany.invalidate()
+            utils.studio.getOne.invalidate({ id: videoId })
+            toast.success("Video revalidated")
+        },
+        onError: () => {
+            toast.error("Something went wrong")
+        }
+    })
+
     const update = trpc.videos.update.useMutation({
         onSuccess: () => {
             utils.studio.getMany.invalidate()
@@ -229,13 +252,17 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                                 Save
                             </Button>
 
-                            <DropdownMenu>
+                            <DropdownMenu modal={false}>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant='ghost' size='icon'>
                                         <MoreVerticalIcon />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => revalidate.mutate({ id: videoId })}>
+                                        <RefreshCcwIcon className="size-4 mr-2" />
+                                        Revalidate
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => remove.mutate({ id: videoId })}>
                                         <TrashIcon className="size-4 mr-2" />
                                         Delete

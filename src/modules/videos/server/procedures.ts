@@ -73,11 +73,11 @@ export const videosRouter = createTRPCRouter({
                 .leftJoin(viewerReactions, eq(viewerReactions.videoId, videos.id))
                 .leftJoin(viewerSubscriptions, eq(viewerSubscriptions.creator, users.id))
                 .where(eq(videos.id, input.id))
-                // .groupBy(
-                //     videos.id,
-                //     users.id,
-                //     viewerReactions.type,
-                // )
+            // .groupBy(
+            //     videos.id,
+            //     users.id,
+            //     viewerReactions.type,
+            // )
 
             if (!existingVideo) {
                 throw new TRPCError({ code: 'NOT_FOUND' })
@@ -120,6 +120,79 @@ export const videosRouter = createTRPCRouter({
             })
 
             return workflowRunId
+        }),
+    revalidate: protectedProcedure
+        .input(z.object({ id: z.string().uuid() }))
+        .mutation(async ({ ctx, input }) => {
+            const { id: userId } = ctx.user
+
+            const [existingVideo] = await db
+                .select()
+                .from(videos)
+                .where(and(
+                    eq(videos.id, input.id),
+                    eq(videos.userId, userId)
+                ))
+
+            if (!existingVideo) {
+                throw new TRPCError({ code: 'NOT_FOUND' })
+            }
+
+            if (!existingVideo.muxUploadId) {
+                throw new TRPCError({ code: 'BAD_REQUEST' })
+            }
+
+            const upload = await mux.video.uploads.retrieve(existingVideo.muxUploadId)
+
+            if (!upload || !upload.asset_id) {
+                throw new TRPCError({ code: 'BAD_REQUEST' })
+            }
+
+            const asset = await mux.video.assets.retrieve(upload.asset_id)
+
+            if (!asset) {
+                throw new TRPCError({ code: 'BAD_REQUEST' })
+            }
+
+            const playbackId = asset.playback_ids?.[0].id
+            const duration = asset.duration ? Math.round(asset.duration / 1000) : 0
+
+            if (!playbackId) {
+                throw new TRPCError({ code: 'BAD_REQUEST' })
+            }
+
+            const audioTrack = asset.tracks?.find(track => track.type === 'audio')
+            const trackId = audioTrack?.id
+            const trackStatus = audioTrack?.status
+
+            if (trackId && trackStatus) {
+                if (!['ready', 'preparing'].includes(trackStatus)) {
+                    throw new TRPCError({ 
+                        code: 'BAD_REQUEST',
+                        message: 'Invalid track status'
+                    })
+                }
+            }
+
+            const [updatedVideo] = await db
+                .update(videos)
+                .set({
+                    muxStatus: asset.status,
+                    muxPlaybackId: playbackId,
+                    muxAssetId: asset.id,
+                    duration,
+                    ...(trackId && trackStatus ? {
+                        muxTrackId: trackId,
+                        muxTrackStatus: trackStatus
+                    } : {})
+                })
+                .where(and(
+                    eq(videos.id, input.id),
+                    eq(videos.userId, userId)
+                ))
+                .returning()
+
+            return updatedVideo
         }),
     restoreThumbnail: protectedProcedure
         .input(z.object({ id: z.string().uuid() }))
