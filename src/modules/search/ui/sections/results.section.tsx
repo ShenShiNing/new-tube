@@ -3,6 +3,7 @@
 import { useIsMobile } from "@/hooks/use-mobile"
 import { trpc } from "@/trpc/client"
 import { DEFAULT_LIMIT } from "@/constants"
+import { InfiniteScroll } from "@/components/infinite.scroll"
 import { VideoRowCard, VideoRowCardSkeleton } from "@/modules/videos/ui/components/video-row-card"
 import { VideoGridCard, VideoGridCardSkeleton } from "@/modules/videos/ui/components/video-grid-card"
 
@@ -48,6 +49,11 @@ export const ResultsSection = ({
                     }
                 </div>
             )}
+            <InfiniteScroll  
+                hasNextPage={resultQuery.hasNextPage}
+                isFetchingNextPage={resultQuery.isFetchingNextPage}
+                fetchNextPage={resultQuery.fetchNextPage}
+            />
         </>
     )
 }
