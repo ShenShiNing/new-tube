@@ -1,3 +1,7 @@
+import { DEFAULT_LIMIT } from "@/constants"
+import { trpc, HydrateClient } from "@/trpc/server"
+import { SearchView } from "@/modules/search/ui/views/search-view"
+
 export const dynamic = "force-dynamic"
 
 interface SearchPageProps {
@@ -12,10 +16,17 @@ const SearchPage = async({
 }: SearchPageProps) => {
     const { query, categoryId } = await searchParams
 
+    void trpc.categories.getMany.prefetch()
+    void trpc.search.getMany.prefetchInfinite({
+        query,
+        categoryId,
+        limit: DEFAULT_LIMIT
+    })
+
     return (
-        <div>
-            Searching for {query} in category: {categoryId}
-        </div>
+        <HydrateClient>
+           <SearchView query={query} categoryId={categoryId}/>
+        </HydrateClient>
     )
 }
 
