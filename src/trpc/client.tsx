@@ -27,7 +27,7 @@ function getUrl() {
     const base = (() => {
         if (typeof window === 'undefined') return ''
         // TODO: Modify for outside-Vercel deployment
-        if ( APP_URL) return `https://${ APP_URL }`
+        if (APP_URL) return `https://${APP_URL}`
         return 'http://localhost:3000'
     })();
     return `${base}/api/trpc`
@@ -44,7 +44,7 @@ export function TRPCProvider(
     //       render if it suspends and there is no boundary
     const queryClient = getQueryClient()
 
-    const [trpcClient] = useState(() => 
+    const [trpcClient] = useState(() =>
         trpc.createClient({
             links: [
                 httpBatchLink({
