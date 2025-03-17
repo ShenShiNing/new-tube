@@ -7,7 +7,7 @@ import { UserInfo } from "@/modules/users/ui/components/user-info";
 import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VideoMenu } from "./video-menu";
-import { VideoThumbnail } from "./video-thumbnail";
+import { VideoThumbnail, VideoThumbnailSkeleton } from "./video-thumbnail";
 import {
     Tooltip,
     TooltipContent,
@@ -43,10 +43,38 @@ interface VideoRowCardProps extends VariantProps<typeof videoRowCardVariants> {
     onRemove?: () => void
 }
 
-export const VideoRowCardSkeleton = () => {
+export const VideoRowCardSkeleton = ({ size }: VariantProps<typeof videoRowCardVariants>) => {
     return (
-        <div>
-            <Skeleton />
+        <div className={videoRowCardVariants({ size })}>
+            {/* Thumbnail Skeleton */}
+            <div className={thumbnailVariants({ size })}>
+                <VideoThumbnailSkeleton />
+            </div>
+
+            {/* Info Skeleton */}
+            <div className="flex-1 min-w-0">
+                <div className="felx justify-between gap-x-2">
+                    <div className="flex-1 min-w-0">
+                        <Skeleton
+                            className={cn("h-5 w-[40%]", size === "compact" && "h-4 w-[40%]")}
+                        />
+                        {size === "default" && (
+                            <>
+                                <Skeleton className="h-4 w-[20%] mt-1" />
+                                <div className="flex items-center gap-2 my-3">
+                                    <Skeleton className="size-8 rounded-full" />
+                                    <Skeleton className="h-4 w-24" />
+                                </div>
+                            </>
+                        )}
+                        {size === "compact" && (
+                            <>
+                                <Skeleton className="h-4 w-[50%] mt-1" />
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }
@@ -123,7 +151,7 @@ export const VideoRowCard = ({
                             </>
                         )}
                         {size === "compact" && (
-                            <UserInfo 
+                            <UserInfo
                                 size="sm"
                                 name={data.user.name}
                             />
@@ -135,7 +163,7 @@ export const VideoRowCard = ({
                         )}
                     </Link>
                     <div className="flex-none">
-                        <VideoMenu videoId={data.id} onRemove={onRemove} variant="ghost"/>
+                        <VideoMenu videoId={data.id} onRemove={onRemove} variant="ghost" />
                     </div>
                 </div>
             </div>

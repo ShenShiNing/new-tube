@@ -13,6 +13,7 @@ import { ErrorBoundary } from "react-error-boundary"
 import { trpc } from "@/trpc/client"
 import { toast } from "sonner"
 import { snakeCaseToTitle } from "@/lib/utils"
+import { APP_URL } from "@/constants"
 
 import { THUMBNAIL_FALLBACK } from "@/modules/videos/constants"
 import { ThumbnailUploadModal } from "@/modules/studio/ui/components/thumbnail-upload-modal"
@@ -212,7 +213,7 @@ const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     }
 
     // TODO: Change if deplyoing outside of VERCEL
-    const fullUrl = `${process.env.VERCEL_URL || "https://localhost:3000"}/videos/${videoId}`
+    const fullUrl = `${ APP_URL || "https://localhost:3000"}/videos/${videoId}`
     const [isCopied, setIsCopied] = useState(false)
 
     const onCopy = async () => {

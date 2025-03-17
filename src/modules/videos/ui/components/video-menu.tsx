@@ -1,6 +1,12 @@
 import { toast } from "sonner"
-import { ListPlusIcon, MoreVerticalIcon, ShareIcon, Trash2Icon } from "lucide-react"
+import { APP_URL } from "@/constants"
 import { Button } from "@/components/ui/button"
+import { 
+    ListPlusIcon, 
+    MoreVerticalIcon, 
+    ShareIcon, 
+    Trash2Icon 
+} from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,7 +28,7 @@ export const VideoMenu = ({
 }: VideoMenuProps) => {
     const onShare = () => {
         // TODO: Change if deploying outside of Vercel
-        const fullUrl = `${process.env.VERCEL_URL || "https://localhost:3000"}/videos/${videoId}`
+        const fullUrl = `${ APP_URL || "https://localhost:3000"}/videos/${videoId}`
         navigator.clipboard.writeText(fullUrl)
         toast.success("Link copied to clipboard")
     }

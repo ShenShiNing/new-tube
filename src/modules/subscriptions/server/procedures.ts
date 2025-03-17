@@ -17,7 +17,7 @@ export const subscriptionsRouter = createTRPCRouter({
 
             const [createdSubscription] = await db
                 .insert(subscriptions)
-                .values({ viewerId: ctx.user.id, creatorId: userId })
+                .values({ viewer: ctx.user.id, creator: userId })
                 .returning()
 
             return createdSubscription
@@ -34,8 +34,8 @@ export const subscriptionsRouter = createTRPCRouter({
             const [deletedSubscription] = await db
                 .delete(subscriptions)
                 .where(and(
-                    eq(subscriptions.viewerId, ctx.user.id),
-                    eq(subscriptions.creatorId, userId)
+                    eq(subscriptions.viewer, ctx.user.id),
+                    eq(subscriptions.creator, userId)
                 ))
                 .returning()
 
