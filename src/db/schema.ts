@@ -26,6 +26,46 @@ export const videoVisibility = pgEnum("video_visibility", [
     "public"
 ])
 
+export const playlistVideos = pgTable("playlist_videos", {
+    playlistId: uuid("playlist_id").references(() => playlists.id, { onDelete: "cascade" }).notNull(),
+    videoId: uuid("video_id").references(() => videos.id, { onDelete: "cascade" }).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (t) => [
+    primaryKey({
+        name: "playlist_videos_pk",
+        columns: [t.playlistId, t.videoId]
+    })
+])
+
+export const playlistVideoRelations = relations(playlistVideos, ({ one }) => ({
+    playlist: one(playlists, {
+        fields: [playlistVideos.playlistId],
+        references: [playlists.id]
+    }),
+    video: one(videos, {
+        fields: [playlistVideos.videoId],
+        references: [videos.id]
+    })
+}))
+
+export const playlists = pgTable("playlist", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull()
+})
+
+export const playlistRelations = relations(playlists, ({ one, many }) => ({
+    user: one(users, {
+        fields: [playlists.userId],
+        references: [users.id]
+    }),
+    playlistVideos: many(playlistVideos)
+}))
+
 export const users = pgTable("users", {
     id: uuid('id').primaryKey().defaultRandom(),
     clerId: text('clerk_id').unique().notNull(),
@@ -43,7 +83,8 @@ export const userRelations = relations(users, ({ many }) => ({
     subscriptions: many(subscriptions, { relationName: "subscriptions_viewer_id_fkey" }),
     subscribers: many(subscriptions, { relationName: "subscriptions_creator_id_fkey" }),
     comments: many(comments),
-    commentReactions: many(commentReactions)
+    commentReactions: many(commentReactions),
+    playlists: many(playlists)
 }))
 
 export const subscriptions = pgTable("subscriptions", {
@@ -127,7 +168,8 @@ export const videoRelations = relations(videos, ({ one, many }) => ({
     }),
     views: many(videoViews),
     reactions: many(videoReactions),
-    comments: many(comments)
+    comments: many(comments),
+    playlistVideos: many(playlistVideos)
 }))
 
 export const comments = pgTable("comments", {

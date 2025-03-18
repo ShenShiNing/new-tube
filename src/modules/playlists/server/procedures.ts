@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { db } from "@/db";
+import { TRPCError } from "@trpc/server";
 import {
     lt,
     eq,
@@ -13,6 +14,7 @@ import {
     videos,
     videoViews,
     videoReactions,
+    playlists
 } from "@/db/schema";
 import {
     createTRPCRouter,
@@ -20,6 +22,29 @@ import {
 } from "@/trpc/init";
 
 export const playlistsRouter = createTRPCRouter({
+    create: protectedProcedure
+        .input(
+            z.object({
+                name: z.string().min(1),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            const { id: userId } = ctx.user
+            const { name } = input
+
+            const [createdPlaylist] = await db
+                .insert(playlists)
+                .values({
+                    userId,
+                    name
+                })
+                .returning()
+            if (!createdPlaylist) {
+                throw new TRPCError({ code: "BAD_REQUEST" })
+            }
+            
+            return createdPlaylist
+        }),
     getLiked: protectedProcedure
         .input(
             z.object({
