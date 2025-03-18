@@ -27,8 +27,8 @@ export const VideoMenu = ({
     onRemove
 }: VideoMenuProps) => {
     const onShare = () => {
-        // TODO: Change if deploying outside of Vercel
-        const fullUrl = `${ APP_URL || "https://localhost:3000"}/videos/${videoId}`
+        
+        const fullUrl = `${APP_URL}/videos/${videoId}`
         navigator.clipboard.writeText(fullUrl)
         toast.success("Link copied to clipboard")
     }
