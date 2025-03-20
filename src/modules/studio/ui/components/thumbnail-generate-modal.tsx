@@ -31,7 +31,6 @@ export const ThumbnailGenerateModal = ({
     open,
     onOpenChange
 }: ThumbnailGenerateModalProps) => {
-    const utils = trpc.useUtils()
 
     const generateThumbnail = trpc.videos.generateThumbnail.useMutation({
         onSuccess: () => {

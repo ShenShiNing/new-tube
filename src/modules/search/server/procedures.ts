@@ -3,7 +3,6 @@ import { z } from "zod";
 import { db } from "@/db";
 import { videos, users, videoViews, videoReactions } from "@/db/schema";
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { TRPCError } from "@trpc/server";
 
 export const searchRouter = createTRPCRouter({
     getMany: baseProcedure
