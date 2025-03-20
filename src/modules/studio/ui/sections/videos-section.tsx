@@ -107,7 +107,7 @@ const VideosSectionSuspense = () => {
                     </TableHeader>
                     <TableBody>
                         {videos.pages.flatMap((page) => page.items).map((video) => (
-                            <Link href={`/studio/videos/${video.id}`} key={video.id} legacyBehavior>
+                            <Link prefetch  href={`/studio/videos/${video.id}`} key={video.id} legacyBehavior>
                                 <TableRow className="cursor-pointer">
                                     <TableCell className="pl-6">
                                         <div className="flex items-center gap-4">
